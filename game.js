@@ -4,6 +4,8 @@ const gridSize = 10;
 const asteroidSize = 40;
 let ship = { x: 200, y: 200 };
 const mines = generateMines(10); // 10 mines
+let clearedCells = 0;
+const totalSafeCells = (gridSize * gridSize) - mines.length;
 
 canvas.addEventListener('click', shootAsteroid);
 
@@ -29,12 +31,17 @@ function shootAsteroid(e) {
         setTimeout(showGameOverScreen, 1000); 
     } else {
         ctx.clearRect(x, y, asteroidSize, asteroidSize);
+        clearedCells++; // increment the cleared cell count
         let adjacentMinesCount = countAdjacentMines(x, y);
         if (adjacentMinesCount > 0) {
             drawAdjacentMineCount(x, y, adjacentMinesCount);
         }
+        if (clearedCells === totalSafeCells) { // check if all safe cells are cleared
+            setTimeout(showWinScreen, 1000);
+        }
     }
 }
+
 
 
 function drawAdjacentMineSign(x, y) {
@@ -94,6 +101,31 @@ function showGameOverScreen() {
         canvas.removeEventListener('click', restartGame);  // Remove the listener to avoid multiple bindings
     });
 }
+
+function showWinScreen() {
+    // Darken the canvas:
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)'; // semi-transparent black
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Display the win message:
+    ctx.font = '40px Arial';
+    ctx.fillStyle = 'green';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('You Won!', canvas.width / 2, canvas.height / 2);
+
+    // Optionally: Add a smaller text below the win message to prompt a restart:
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'white';
+    ctx.fillText('Click to restart', canvas.width / 2, canvas.height / 2 + 40);
+
+    // Listen for a click event to restart the game:
+    canvas.addEventListener('click', function restartGame() {
+        location.reload();  // This will refresh the page to restart the game
+        canvas.removeEventListener('click', restartGame);  // Remove the listener to avoid multiple bindings
+    });
+}
+
 
 
 function drawAdjacentMineCount(x, y, count) {
